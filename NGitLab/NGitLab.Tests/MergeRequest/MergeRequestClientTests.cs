@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using NGitLab.Models;
 using NUnit.Framework;
 
 namespace NGitLab.Tests.MergeRequest

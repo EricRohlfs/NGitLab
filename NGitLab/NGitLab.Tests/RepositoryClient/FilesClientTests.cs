@@ -1,6 +1,4 @@
-﻿using NGitLab.Models;
-
-namespace NGitLab.Tests.RepositoryClient
+﻿namespace NGitLab.Tests.RepositoryClient
 {
     public class FilesClientTests
     {

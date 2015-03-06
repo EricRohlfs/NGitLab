@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.2.1502.0911\lib\net40\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -47,6 +50,7 @@
     <Compile Include="MergeRequest\_MergeRequestClientTests.cs" />
     <Compile Include="ProjectsTests.cs" />
     <Compile Include="RepositoryClient\BranchClientTests.cs" />
+    <Compile Include="RepositoryClient\ClientConnection.cs" />
     <Compile Include="RepositoryClient\FilesClientTests.cs" />
     <Compile Include="RepositoryClient\ProjectHooksClientTests.cs" />
     <Compile Include="RepositoryClient\RepositoryClientTests.cs" />
@@ -60,6 +64,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NGitLabInterfaces\NGitLabInterfaces.csproj">
+      <Project>{b6296b9f-3353-4f5e-abfc-def38701b95d}</Project>
+      <Name>NGitLabInterfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NGitLab\NGitLab.csproj">
       <Project>{EB69C6AD-64A6-4FE5-880C-38607A2430FB}</Project>
       <Name>NGitLab</Name>

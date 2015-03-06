@@ -1,6 +1,4 @@
-﻿using NGitLab.Models;
-
-namespace NGitLab.Impl
+﻿namespace NGitLab.Impl
 {
     public class FileClient : IFilesClient
     {

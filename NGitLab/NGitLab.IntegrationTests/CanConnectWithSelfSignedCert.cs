@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NGitLab;
@@ -48,5 +49,6 @@ namespace NGitLab.IntegrationTests
 
             Assert.IsTrue(count > 0);
         }
+
     }
 }
