@@ -6,6 +6,8 @@ namespace NGitLab
     {
         IRepositoryClient GetRepository(int projectId);
         IMergeRequestClient GetMergeRequest(int projectId);
+        IProjectClient GetProjects();
+        IUserClient GetUsers();
     }
 
     public class GitLabClient : IGitLabClient
@@ -16,6 +18,7 @@ namespace NGitLab
             Users = new UserClient(_api);
             Projects = new ProjectClient(_api);
         }
+
 
         public static GitLabClient Connect(string hostUrl, string apiToken)
         {
@@ -47,6 +50,16 @@ namespace NGitLab
         public IMergeRequestClient GetMergeRequest(int projectId)
         {
             return new MergeRequestClient(_api, projectId);
+        }
+
+        public IProjectClient GetProjects()
+        {
+            return Projects;
+        }
+
+        public IUserClient GetUsers()
+        {
+            return Users;
         }
     }
 }
