@@ -9,11 +9,19 @@ namespace NGitLab.Impl
         public readonly string APIToken;
         private readonly string _hostUrl;
         private const string APINamespace = "/api/v3";
+        public bool ignoreInvalidCert = false;
 
         public API(string hostUrl, string apiToken)
         {
             _hostUrl = hostUrl.EndsWith("/") ? hostUrl.Replace("/$", "") : hostUrl;
             APIToken = apiToken;
+        }
+
+        public API(string hostUrl, string apiToken, bool ignoreInvalidCert)
+        {
+            _hostUrl = hostUrl.EndsWith("/") ? hostUrl.Replace("/$", "") : hostUrl;
+            APIToken = apiToken;
+            this.ignoreInvalidCert = ignoreInvalidCert;
         }
         
         public HttpRequestor Get()

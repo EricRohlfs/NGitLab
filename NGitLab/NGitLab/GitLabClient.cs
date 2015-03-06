@@ -2,9 +2,15 @@
 
 namespace NGitLab
 {
-    public class GitLabClient
+    public interface IGitLabClient
     {
-        private GitLabClient(string hostUrl, string apiToken)
+        IRepositoryClient GetRepository(int projectId);
+        IMergeRequestClient GetMergeRequest(int projectId);
+    }
+
+    public class GitLabClient : IGitLabClient
+    {
+        public GitLabClient(string hostUrl, string apiToken)
         {
             _api = new API(hostUrl, apiToken);
             Users = new UserClient(_api);
@@ -16,10 +22,22 @@ namespace NGitLab
             return new GitLabClient(hostUrl, apiToken);
         }
 
+        public static GitLabClient Connect(string hostUrl, string apiToken, bool ignoreInvalidCert)
+        {
+            return new GitLabClient(hostUrl, apiToken,ignoreInvalidCert);
+        }
+
         private readonly API _api;
 
         public readonly IUserClient Users;
         public readonly IProjectClient Projects;
+
+        public GitLabClient(string hostUrl, string apiToken, bool ignoreInvalidCert)
+        {
+            _api = new API(hostUrl, apiToken,ignoreInvalidCert);
+            Users = new UserClient(_api);
+            Projects = new ProjectClient(_api);
+        }
 
         public IRepositoryClient GetRepository(int projectId)
         {
