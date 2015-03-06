@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 
 namespace NGitLab.Impl
 {
@@ -56,23 +57,25 @@ namespace NGitLab.Impl
 
         public IEnumerable<T> GetAll<T>(string tailUrl)
         {
-            return new Enumerable<T>(_root.APIToken, _root.GetAPIUrl(tailUrl));
+            return new Enumerable<T>(_root.APIToken, _root.GetAPIUrl(tailUrl),_root.ignoreInvalidCert);
         }
 
         private class Enumerable<T> : IEnumerable<T>
         {
             private readonly string _apiToken;
             private readonly Uri _startUrl;
+            private readonly bool _ignoreInvalidCert;
 
-            public Enumerable(string apiToken, Uri startUrl)
+            public Enumerable(string apiToken, Uri startUrl,bool ignoreInvalidCert)
             {
                 _apiToken = apiToken;
                 _startUrl = startUrl;
+                _ignoreInvalidCert = ignoreInvalidCert;
             }
 
             public IEnumerator<T> GetEnumerator()
             {
-                return new Enumerator<T>(_apiToken, _startUrl);
+                return new Enumerator<T>(_apiToken, _startUrl,_ignoreInvalidCert);
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -85,13 +88,14 @@ namespace NGitLab.Impl
                 private readonly string _apiToken;
                 private Uri _nextUrlToLoad;
                 private readonly List<T> _buffer = new List<T>();
-
+                private bool _ignoreInvalidCert;
                 private bool _finished;
 
-                public Enumerator(string apiToken, Uri startUrl)
+                public Enumerator(string apiToken, Uri startUrl,bool ignoreInvalidCert)
                 {
                     _apiToken = apiToken;
                     _nextUrlToLoad = startUrl;
+                    _ignoreInvalidCert = ignoreInvalidCert;
                 }
 
                 public void Dispose()
@@ -109,29 +113,21 @@ namespace NGitLab.Impl
 
                         var request = SetupConnection(_nextUrlToLoad, MethodType.Get);
                         request.Headers["PRIVATE-TOKEN"] = _apiToken;
-
-                        using (var response = request.GetResponse())
+                        if (_ignoreInvalidCert)
                         {
-                            // <http://localhost:1080/api/v3/projects?page=2&per_page=0>; rel="next", <http://localhost:1080/api/v3/projects?page=1&per_page=0>; rel="first", <http://localhost:1080/api/v3/projects?page=2&per_page=0>; rel="last"
-                            var link = response.Headers["Link"];
+                            using (new ServerCertificateValidationScope(request, delegate { return true; }))
+                            using (var response = request.GetResponse())
+                            {
+                                ProcessRequest(response);
+                            }
+                        }
+                        else
+                        {
+                            using (var response = request.GetResponse())
+                            {
+                                ProcessRequest(response);
+                            }
                             
-                            string[] nextLink = null;
-                            if (string.IsNullOrEmpty(link) == false)
-                            nextLink = link.Split(',')
-                                .Select(l => l.Split(';'))
-                                .FirstOrDefault(pair => pair[1].Contains("next"));
-
-                            if (nextLink != null)
-                            {
-                                _nextUrlToLoad = new Uri(nextLink[0].Trim('<', '>', ' '));
-                            }
-                            else
-                            {
-                                _nextUrlToLoad = null;
-                            }
-
-                            var stream = response.GetResponseStream();
-                            _buffer.AddRange(SimpleJson.DeserializeObject<T[]>(new StreamReader(stream).ReadToEnd()));
                         }
 
                         return _buffer.Count > 0;
@@ -144,6 +140,31 @@ namespace NGitLab.Impl
                     }
 
                     return false;
+                }
+
+                private void ProcessRequest(WebResponse response)
+                {
+// <http://localhost:1080/api/v3/projects?page=2&per_page=0>; rel="next", <http://localhost:1080/api/v3/projects?page=1&per_page=0>; rel="first", <http://localhost:1080/api/v3/projects?page=2&per_page=0>; rel="last"
+                    var link = response.Headers["Link"];
+
+                    string[] nextLink = null;
+                    if (string.IsNullOrEmpty(link) == false)
+                        nextLink = link.Split(',')
+                                       .Select(l => l.Split(';'))
+                                       .FirstOrDefault(pair => pair[1].Contains("next"));
+
+                    if (nextLink != null)
+                    {
+                        _nextUrlToLoad = new Uri(nextLink[0].Trim('<', '>', ' '));
+                    }
+                    else
+                    {
+                        _nextUrlToLoad = null;
+                    }
+
+                    var stream = response.GetResponseStream();
+                    if (stream != null)
+                        _buffer.AddRange(SimpleJson.DeserializeObject<T[]>(new StreamReader(stream).ReadToEnd()));
                 }
 
                 public void Reset()
@@ -186,7 +207,8 @@ namespace NGitLab.Impl
 
         private WebRequest SetupConnection(Uri url)
         {
-            return SetupConnection(url, _method);
+            var request =  SetupConnection(url, _method);
+            return request;
         }
 
         private static WebRequest SetupConnection(Uri url, MethodType methodType)
@@ -194,8 +216,37 @@ namespace NGitLab.Impl
             var request = WebRequest.Create(url);
             request.Method = methodType.ToString().ToUpperInvariant();
             request.Headers.Add("Accept-Encoding", "gzip");
-
             return request;
+        }
+    }
+
+    public class ServerCertificateValidationScope : IDisposable
+    {
+        private readonly RemoteCertificateValidationCallback _callback;
+       
+        public ServerCertificateValidationScope(object request,
+            RemoteCertificateValidationCallback callback)
+        {
+            var previous = ServicePointManager.ServerCertificateValidationCallback;
+            _callback = (sender, certificate, chain, errors) =>
+            {
+                if (sender == request)
+                {
+                    return callback(sender, certificate, chain, errors);
+                }
+                if (previous != null)
+                {
+                    return previous(sender, certificate, chain, errors);
+                }
+                return errors == SslPolicyErrors.None;
+            };
+            ServicePointManager.ServerCertificateValidationCallback += _callback;
+        }
+
+        public void Dispose()
+        {
+            ServicePointManager.ServerCertificateValidationCallback -= _callback;
+            
         }
     }
 }
