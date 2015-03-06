@@ -39,7 +39,7 @@ namespace NGitLab.UnitTestV2
 
         public Stream GetJsonStrStream()
         {
-           var filePath =   @"C:\Data\AllProjectsSample.json";//need to clean up data before check in.
+           const string filePath = @"C:\Data\AllProjectsSample.json"; //need to clean up data before check in.
            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             return fileStream;
         }
