@@ -61,6 +61,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using NGitLabInterfaces;
 
 namespace NGitLab.Impl
 {

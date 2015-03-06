@@ -25,23 +25,26 @@ namespace NGitLab
        public IEnumerable<Project> GetAll()
        {
            var results = new List<Project>();
-           var projectStr = "";
+           var projectStr = Info.Host;
            var uri = new Uri(projectStr);
 
            Request.Create(uri);
            Request.AddHeader("PRIVATE-TOKEN", Info.Token);
            Request.SetMethod(MethodType.Get);
-           using(var resp = Request.GetResponse())
+           Deserialize(results);
+
+           return results;
+       }
+
+       public void Deserialize(List<Project> results)
+       {
+           using (var resp = Request.GetResponse())
            using (var stream = resp.GetResponseStream())
            {
                var s = new StreamReader(stream).ReadToEnd();
                var proj = (Project[]) JsonConvert.DeserializeObject<Project[]>(s);
                results.AddRange(proj);
            }
-
-           return results;
        }
-
-       
     }
 }

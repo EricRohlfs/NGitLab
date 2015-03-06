@@ -1,4 +1,5 @@
 ﻿using NGitLab.Impl;
+using NGitLabInterfaces;
 
 namespace NGitLab
 {

@@ -1,3 +1,5 @@
+using NGitLabInterfaces.Models;
+
 namespace NGitLabInterfaces
 {
     public interface IFilesClient

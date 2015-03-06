@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using NGitLabInterfaces;
+using NGitLabInterfaces.Models;
 
 namespace NGitLab.Impl
 {

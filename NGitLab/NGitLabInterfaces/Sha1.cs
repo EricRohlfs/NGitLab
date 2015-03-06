@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace NGitLab
+namespace NGitLabInterfaces
 {
     /// <summary>
     /// Sha1 hash value representation.

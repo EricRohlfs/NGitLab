@@ -1,4 +1,7 @@
-﻿namespace NGitLab.Impl
+﻿using NGitLabInterfaces;
+using NGitLabInterfaces.Models;
+
+namespace NGitLab.Impl
 {
     public class FileClient : IFilesClient
     {

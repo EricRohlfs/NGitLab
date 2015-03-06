@@ -60,7 +60,6 @@
     <Compile Include="ProjectRepo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Impl\SimpleJson.cs" />
-    <Compile Include="Sha1.cs" />
     <Compile Include="WebRequestWrap.cs" />
   </ItemGroup>
   <ItemGroup>
